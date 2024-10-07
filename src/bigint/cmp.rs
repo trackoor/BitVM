@@ -93,6 +93,7 @@ mod test {
     use crate::bigint::{U254, U64};
     use crate::treepp::*;
     use core::cmp::Ordering;
+    use bitcoin_script::builder::Block;
     use num_bigint::{BigUint, RandomBits};
     use rand::{Rng, SeedableRng};
     use rand_chacha::ChaCha20Rng;
@@ -257,6 +258,97 @@ mod test {
             };
             run(script);
         }
+    }
+
+    fn expand_script(script: &Script) {
+        for block in &script.blocks {
+            match block {
+                Block::Call(id) => {
+                    let called_script = script
+                        .script_map
+                        .get(id)
+                        .expect("Missing entry for a called script");
+                    expand_script(called_script);
+                }
+                Block::Script(s) => {
+                    println!("  script: {:?}", s);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn print_is_zero() {
+        let input: BigUint = BigUint::from(25100u32);
+        println!("U254::is_zero expanded (input = {:?}):", input);
+        let script = script! {
+            { U254::push_u32_le(&input.to_u32_digits()) }
+            { U254::is_zero(0) }
+            OP_NOT
+        };
+        expand_script(&script);
+    }
+
+    #[test]
+    fn print_equal() {
+        let input1: BigUint = BigUint::from(25000u32);
+        let input2: BigUint = BigUint::from(25100u32);
+        println!("U254::equal (input1 = {:?}, input2 = {:?}):", input1, input2);
+        let script = script! {
+            { U254::push_u32_le(&input1.to_u32_digits()) }
+            { U254::push_u32_le(&input2.to_u32_digits()) }
+            { U254::lessthan(1, 0) }
+        };
+        expand_script(&script);
+    }
+
+    #[test]
+    fn print_zip() {
+        let input1: BigUint = BigUint::from(25000u32);
+        let input2: BigUint = BigUint::from(25100u32);
+        println!("U254::zip (input1 = {:?}, input2 = {:?}):", input1, input2);
+        let script = script! {
+            { U254::push_u32_le(&input1.to_u32_digits()) }
+            { U254::push_u32_le(&input2.to_u32_digits()) }
+            { U254::roll(1) }
+        };
+        expand_script(&script);
+    }
+
+    #[test]
+    fn print_is_one() {
+        let input: BigUint = BigUint::from(25100u32);
+        println!("U254::is_one (input = {:?}):", input);
+        let script = script! {
+            { U254::push_u32_le(&input.to_u32_digits()) }
+            { U254::is_one(0) }
+            OP_NOT
+        };
+        expand_script(&script);
+    }
+
+    #[test]
+    fn print_is_one_keep_element() {
+        let input: BigUint = BigUint::from(25100u32);
+        println!("U254::is_one_keep_element (input = {:?}):", input);
+        let script = script! {
+            { U254::push_u32_le(&input.to_u32_digits()) }
+            { U254::is_one_keep_element(0) }
+            OP_NOT
+        };
+        expand_script(&script);
+    }
+
+    #[test]
+    fn print_is_zero_keep_element() {
+        let input: BigUint = BigUint::from(25100u32);
+        println!("U254::is_zero_keep_element (input = {:?}):", input);
+        let script = script! {
+            { U254::push_u32_le(&input.to_u32_digits()) }
+            { U254::is_zero_keep_element(0) }
+            OP_NOT
+        };
+        expand_script(&script);
     }
 
     #[test]

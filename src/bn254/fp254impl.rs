@@ -83,7 +83,7 @@ pub trait Fp254Impl {
             { U254::push_u32_le(&v.mul(r).rem(p).to_u32_digits()) }
         }
     }
-
+// Verify
     #[inline]
     fn push_dec_not_montgomery(dec_string: &str) -> Script {
         let v = BigUint::from_str_radix(dec_string, 10).unwrap();

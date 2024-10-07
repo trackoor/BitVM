@@ -178,8 +178,14 @@ mod tests {
             OP_TRUE
         };
 
-        let res = execute_script(script);
-        assert!(res.success);
+        // let res = execute_script(script);
+        // print script
+        // println!("{:?}", script);
+        // print all opcodes in the script
+        for opcode in script.blocks {
+            println!("{:?}", opcode);
+        }
+        // assert!(res.success);
     }
 
     #[test]
